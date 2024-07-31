@@ -12,13 +12,19 @@
 
 import tkinter as tk
 from views.login_view import LoginView
-import logging
+from views.main_view import MainView
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+API_KEY = '969353204ed3454e013d97eccc693b9d'  # Replace with your actual API key
+
+
+def load_main_view(root):
+    root.destroy()
     root = tk.Tk()
-    app = LoginView(root)
+    app = MainView(root, API_KEY)
     root.mainloop()
 
 
-
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = LoginView(root)
+    root.mainloop()

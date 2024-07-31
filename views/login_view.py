@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from controllers.user_controller import UserController
+from views.main_view import MainView  # Import MainView class
 import logging
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,8 @@ class LoginView:
         logger.debug(f"Attempting to login with username: {username}")
         user = self.user_controller.authenticate_user(username, password)
         if user:
-            messagebox.showinfo("Login", "Login successful!")
+            logger.info("Login successful, redirecting to main view.")
+            self.redirect_to_main_view()
         else:
             messagebox.showerror("Login", "Invalid credentials")
 
@@ -63,8 +65,9 @@ class LoginView:
         self.user_controller.create_user(username, password)
         messagebox.showinfo("Sign Up", "User created successfully")
 
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = LoginView(root)
-    root.mainloop()
+    def redirect_to_main_view(self):
+        # Create a new window for the main view
+        self.root.destroy()  # Close the login window
+        root = tk.Tk()
+        MainView(root, api_key='969353204ed3454e013d97eccc693b9d')  # Replace with your actual API key
+        root.mainloop()
