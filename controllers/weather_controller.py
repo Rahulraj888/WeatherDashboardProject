@@ -1,5 +1,6 @@
 from utils.api_client import WeatherAPIClient
 from utils.database import Database
+from models.weather_data import WeatherData
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,14 +15,13 @@ class WeatherController:
         try:
             data = self.api_client.fetch_current_weather(location)
             logger.debug(f"Weather API response: {data}")
-            # Parse the required data from the API response
-            weather_info = {
-                'location': location,
-                'temperature': data['main']['temp'],
-                'humidity': data['main']['humidity'],
-                'wind_speed': data['wind']['speed'],
-                'timestamp': data['dt']
-            }
+            weather_info = WeatherData(
+                location=location,
+                temperature=data['main']['temp'],
+                humidity=data['main']['humidity'],
+                wind_speed=data['wind']['speed'],
+                timestamp=data['dt']
+            )
             return weather_info
         except Exception as e:
             logger.error(f"Error fetching current weather: {e}")
@@ -43,14 +43,15 @@ class WeatherController:
             logger.error(f"Error fetching historical weather: {e}")
             return None
 
-    def save_weather_data(self, location, temperature, humidity, wind_speed, timestamp):
+    def save_weather_data(self, weather_data: WeatherData):
         try:
             cursor = self.db.get_cursor()
             if cursor:
                 cursor.execute("""
                     INSERT INTO weather_data (location, temperature, humidity, wind_speed, timestamp)
                     VALUES (?, ?, ?, ?, ?)
-                """, (location, temperature, humidity, wind_speed, timestamp))
+                """, (weather_data.location, weather_data.temperature, weather_data.humidity, weather_data.wind_speed,
+                      weather_data.timestamp))
                 self.db.connection.commit()
                 logger.info("Weather data saved successfully.")
             else:

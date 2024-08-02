@@ -1,5 +1,6 @@
 import logging
 from utils.database import Database
+from models.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +15,14 @@ class UserController:
             try:
                 logger.debug("Attempting to authenticate user.")
                 self.cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
-                user = self.cursor.fetchone()
-                logger.info("User authentication successful." if user else "User authentication failed.")
-                return user
+                row = self.cursor.fetchone()
+                if row:
+                    user = User(id=row[0], username=row[1], password=row[2])
+                    logger.info("User authentication successful.")
+                    return user
+                else:
+                    logger.info("User authentication failed.")
+                    return None
             except Exception as e:
                 logger.error(f"Error during authentication: {e}")
         return None

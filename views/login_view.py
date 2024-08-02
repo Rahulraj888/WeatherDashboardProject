@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class LoginView:
     def __init__(self, root):
         self.root = root

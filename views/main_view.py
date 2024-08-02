@@ -28,12 +28,12 @@ class MainView:
         weather_data = self.weather_controller.get_current_weather(location)
         if weather_data:
             self.weather_info.delete('1.0', tk.END)
-            weather_info_text = (f"Location: {weather_data['location']}\n"
-                                 f"Temperature: {weather_data['temperature']} °C\n"
-                                 f"Humidity: {weather_data['humidity']}%\n"
-                                 f"Wind Speed: {weather_data['wind_speed']} m/s\n"
-                                 f"Timestamp: {weather_data['timestamp']}")
+            weather_info_text = (f"Location: {weather_data.location}\n"
+                                 f"Temperature: {weather_data.temperature} °C\n"
+                                 f"Humidity: {weather_data.humidity}%\n"
+                                 f"Wind Speed: {weather_data.wind_speed} m/s\n"
+                                 f"Timestamp: {weather_data.timestamp}")
             self.weather_info.insert(tk.END, weather_info_text)
-            self.weather_controller.save_weather_data(**weather_data)
+            self.weather_controller.save_weather_data(weather_data)
         else:
             messagebox.showerror("Error", "Failed to fetch weather data.")
