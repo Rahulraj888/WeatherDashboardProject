@@ -49,7 +49,7 @@ class WeatherController:
             if cursor:
                 cursor.execute("""
                     INSERT INTO weather_data (location, temperature, humidity, wind_speed, timestamp)
-                    VALUES (%s, %s, %s, %s, %s)
+                    VALUES (?, ?, ?, ?, ?)
                 """, (location, temperature, humidity, wind_speed, timestamp))
                 self.db.connection.commit()
                 logger.info("Weather data saved successfully.")

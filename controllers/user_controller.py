@@ -13,7 +13,7 @@ class UserController:
         if self.cursor:
             try:
                 logger.debug("Attempting to authenticate user.")
-                self.cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
+                self.cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
                 user = self.cursor.fetchone()
                 logger.info("User authentication successful." if user else "User authentication failed.")
                 return user
@@ -25,7 +25,7 @@ class UserController:
         if self.cursor:
             try:
                 logger.debug("Attempting to create user.")
-                self.cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
+                self.cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
                 self.db.connection.commit()
                 logger.info("User created successfully.")
             except Exception as e:
