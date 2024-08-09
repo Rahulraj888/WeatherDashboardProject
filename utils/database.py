@@ -1,11 +1,12 @@
 import sqlite3
 import logging
+from config import local_config
 
 logger = logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self, db_file='weatherdashboard.db'):
+    def __init__(self, db_file=local_config.DATABASE_NAME):
         self.connection = None
         self.cursor = None
         self.db_file = db_file
@@ -25,15 +26,15 @@ class Database:
 
     def create_tables(self):
         try:
-            self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
+            self.cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {local_config.USER_TABLE} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL
             )
             """)
-            self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS weather_data (
+            self.cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {local_config.WEATHER_DATA_TABLE} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 location TEXT NOT NULL,
                 temperature REAL NOT NULL,
