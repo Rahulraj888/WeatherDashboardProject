@@ -19,7 +19,8 @@ class MainView:
         self.root.columnconfigure(1, weight=1)
         self.root.rowconfigure(0, weight=1)
         self.root.rowconfigure(1, weight=1)
-        self.root.rowconfigure(2, weight=10)
+        self.root.rowconfigure(2, weight=1)
+        self.root.rowconfigure(3, weight=10)
 
         # Apply a background color
         self.root.configure(bg='#1F51FF')  # Set a blue background
@@ -60,7 +61,18 @@ class MainView:
             bg='white',
             fg='#1F51FF'
         )
-        self.weather_button.grid(row=2, column=0, columnspan=2, pady=20)
+        self.weather_button.grid(row=2, column=0, columnspan=1, pady=20, padx=10)
+
+        # Get forecast button
+        self.forecast_button = tk.Button(
+            root,
+            text="Get Forecast",
+            command=self.get_forecast,
+            font=("Helvetica", 16),
+            bg='white',
+            fg='#1F51FF'
+        )
+        self.forecast_button.grid(row=2, column=1, columnspan=1, pady=20, padx=10)
 
         # Weather information display
         self.weather_info = tk.Text(
@@ -90,3 +102,19 @@ class MainView:
             self.weather_controller.save_weather_data(weather_data)
         else:
             messagebox.showerror("Error", "Failed to fetch weather data.")
+
+    def get_forecast(self):
+        location = self.location_entry.get()
+        forecast_data = self.weather_controller.get_forecast(location)
+        if forecast_data:
+            self.weather_info.delete('1.0', tk.END)
+            forecast_text = "\nForecast:\n"
+            for entry in forecast_data[:5]:  # Display the first 5 forecast entries
+                forecast_text += (f"Time: {entry['dt_txt']}\n"
+                                  f"Temp: {entry['main']['temp']} °C\n"
+                                  f"Humidity: {entry['main']['humidity']}%\n"
+                                  f"Wind Speed: {entry['wind']['speed']} m/s\n"
+                                  "-------------------------\n")
+            self.weather_info.insert(tk.END, forecast_text)
+        else:
+            messagebox.showerror("Error", "Failed to fetch forecast data.")

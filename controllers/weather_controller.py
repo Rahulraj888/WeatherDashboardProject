@@ -5,7 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class WeatherController:
     def __init__(self, api_key):
         self.api_client = WeatherAPIClient(api_key)
@@ -30,7 +29,12 @@ class WeatherController:
     def get_forecast(self, location):
         try:
             data = self.api_client.fetch_forecast(location)
-            return data  # Process and parse the data as needed
+            logger.debug(f"Forecast API response: {data}")
+            if 'list' in data:
+                return data['list']
+            else:
+                logger.error(f"API response missing 'list' key: {data}")
+                return []
         except Exception as e:
             logger.error(f"Error fetching forecast: {e}")
             return None
