@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 weatherdashboard.db
+env/
+venv/
