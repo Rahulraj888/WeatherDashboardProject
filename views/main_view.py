@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from controllers.weather_controller import WeatherController
 import logging
 import matplotlib.pyplot as plt
 from datetime import datetime
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -25,26 +26,19 @@ class MainView:
         self.root.rowconfigure(3, weight=1)
         self.root.rowconfigure(4, weight=10)
 
-        # Apply a background color
-        self.root.configure(bg='#1F51FF')  # Set a blue background
-
         # Header label
         self.header_label = tk.Label(
             root,
             text="Weather Dashboard",
-            font=("Helvetica", 24, "bold"),
-            bg='#1F51FF',
-            fg='white'
+            font=("Helvetica", 24, "bold")
         )
-        self.header_label.grid(row=0, column=0, columnspan=3, pady=20)
+        self.header_label.grid(row=0, column=0, columnspan=4, pady=20)
 
         # Location entry
         self.location_label = tk.Label(
             root,
             text="Enter Location:",
-            font=("Helvetica", 16),
-            bg='#1F51FF',
-            fg='white'
+            font=("Helvetica", 16)
         )
         self.location_label.grid(row=1, column=0, sticky='e', padx=(0, 10))
 
@@ -55,16 +49,21 @@ class MainView:
         )
         self.location_entry.grid(row=1, column=1, sticky='w', padx=(10, 0))
 
+        # Configure grid columns to have equal weight
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_columnconfigure(1, weight=1)
+        root.grid_columnconfigure(2, weight=1)
+        root.grid_columnconfigure(3, weight=1)
+
         # Get weather button
         self.weather_button = tk.Button(
             root,
             text="Get Weather",
             command=self.get_weather,
             font=("Helvetica", 16),
-            bg='white',
-            fg='#1F51FF'
+            bg='white'
         )
-        self.weather_button.grid(row=2, column=0, pady=20, padx=10)
+        self.weather_button.grid(row=2, column=0, pady=20, padx=20, sticky='ew')
 
         # Get forecast button
         self.forecast_button = tk.Button(
@@ -72,10 +71,9 @@ class MainView:
             text="Get Forecast",
             command=self.get_forecast,
             font=("Helvetica", 16),
-            bg='white',
-            fg='#1F51FF'
+            bg='white'
         )
-        self.forecast_button.grid(row=2, column=1, pady=20, padx=10)
+        self.forecast_button.grid(row=2, column=1, pady=20, padx=20, sticky='ew')
 
         # Plot forecast button
         self.plot_button = tk.Button(
@@ -83,10 +81,19 @@ class MainView:
             text="Plot Forecast",
             command=self.plot_forecast,
             font=("Helvetica", 16),
-            bg='white',
-            fg='#1F51FF'
+            bg='white'
         )
-        self.plot_button.grid(row=2, column=2, pady=20, padx=10)
+        self.plot_button.grid(row=2, column=2, pady=20, padx=20, sticky='ew')
+
+        # Load CSV button
+        self.load_csv_button = tk.Button(
+            root,
+            text="Load CSV and Show Insights",
+            command=self.load_csv,
+            font=("Helvetica", 16),
+            bg='white'
+        )
+        self.load_csv_button.grid(row=2, column=3, pady=20, padx=20, sticky='ew')
 
         # Weather information display
         self.weather_info = tk.Text(
@@ -94,11 +101,10 @@ class MainView:
             font=("Helvetica", 14),
             wrap='word',
             bg='white',
-            fg='#1F51FF',
             height=20,
-            width=80
+            width=100
         )
-        self.weather_info.grid(row=4, column=0, columnspan=3, padx=20, pady=20)
+        self.weather_info.grid(row=4, column=0, columnspan=4, padx=20, pady=20)
 
         self.weather_controller = WeatherController(api_key)
         self.forecast_data = None  # To store forecast data for plotting
@@ -157,3 +163,53 @@ class MainView:
         plt.grid(True)
 
         plt.show()
+
+    def load_csv(self):
+        file_path = filedialog.askopenfilename(
+            filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+        )
+        if file_path:
+            try:
+                df = pd.read_csv(file_path)
+                insights = self.analyze_csv(df)
+                self.weather_info.delete('1.0', tk.END)
+                self.weather_info.insert(tk.END, insights)
+            except Exception as e:
+                logger.error(f"Error reading CSV file: {e}")
+                messagebox.showerror("Error", f"Failed to load CSV file.\n{str(e)}")
+
+    def analyze_csv(self, df):
+        try:
+            # Filter out non-numeric columns for analysis
+            numeric_df = df.select_dtypes(include=['number'])
+
+            insights = ""
+            insights += "Summary Statistics:\n"
+            insights += str(numeric_df.describe()) + "\n\n"
+
+            insights += "Correlation Matrix:\n"
+            insights += str(numeric_df.corr()) + "\n\n"
+
+            if 'Rainfall' in df.columns:
+                insights += "Rainfall Analysis:\n"
+                total_rainfall = df['Rainfall'].sum()
+                rain_days = df[df['Rainfall'] > 0].shape[0]
+                if rain_days > 0:
+                    avg_rainfall = total_rainfall / rain_days
+                else:
+                    avg_rainfall = 0
+                insights += f"Total Rainfall: {total_rainfall} mm\n"
+                insights += f"Number of Rainy Days: {rain_days}\n"
+                insights += f"Average Rainfall on Rainy Days: {avg_rainfall:.2f} mm\n\n"
+
+            if 'MinTemp' in df.columns and 'MaxTemp' in df.columns:
+                insights += "Temperature Trends:\n"
+                avg_min_temp = df['MinTemp'].mean()
+                avg_max_temp = df['MaxTemp'].mean()
+                insights += f"Average Minimum Temperature: {avg_min_temp:.2f} °C\n"
+                insights += f"Average Maximum Temperature: {avg_max_temp:.2f} °C\n"
+
+            return insights
+        except Exception as e:
+            logger.error(f"Error analyzing CSV file: {e}")
+            return "Failed to analyze CSV file."
